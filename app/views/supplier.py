@@ -4,7 +4,7 @@ import sqlite3
 supplier_blueprint = Blueprint('supplier', __name__, template_folder='templates')
 
 # 供應商列表頁面
-@supplier_blueprint.route('/suppliers')
+@supplier_blueprint.route('/suppliers', strict_slashes=False)
 def suppliers():
     conn = sqlite3.connect('management_system.db')
     cursor = conn.cursor()
@@ -28,7 +28,7 @@ def add_supplier():
                    (name, phone, address, email, notes))
     conn.commit()
     conn.close()
-    return redirect(url_for('suppliers'))
+    return redirect(url_for('supplier.suppliers'))
 
 # 刪除供應商
 @supplier_blueprint.route('/delete_suppliers', methods=['POST'])
@@ -39,7 +39,7 @@ def delete_suppliers():
     cursor.executemany("DELETE FROM suppliers WHERE id = ?", [(id,) for id in ids])
     conn.commit()
     conn.close()
-    return redirect(url_for('suppliers'))
+    return redirect(url_for('supplier.suppliers'))
 
 # 供應商詳細資訊頁面
 @supplier_blueprint.route('/supplier/<int:supplier_id>')
@@ -66,4 +66,4 @@ def update_supplier(supplier_id):
                    (name, phone, address, email, notes, supplier_id))
     conn.commit()
     conn.close()
-    return redirect(url_for('suppliers'))
+    return redirect(url_for('supplier.suppliers'))

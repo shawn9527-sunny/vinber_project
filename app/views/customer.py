@@ -4,7 +4,7 @@ import sqlite3
 customer_blueprint = Blueprint('customer', __name__, template_folder='templates')
 
 # 客戶管理頁面
-@customer_blueprint .route('/customers')
+@customer_blueprint .route('/customers', strict_slashes=False)
 def customers():
     conn = sqlite3.connect('management_system.db')
     cursor = conn.cursor()
@@ -27,7 +27,7 @@ def add_customer():
                    (name, phone, address, email))
     conn.commit()
     conn.close()
-    return redirect(url_for('customers'))
+    return redirect(url_for('customer.customers'))
 
 # 刪除客戶
 @customer_blueprint .route('/delete_customers', methods=['POST'])
@@ -38,7 +38,7 @@ def delete_customers():
     cursor.executemany("DELETE FROM customers WHERE id = ?", [(id,) for id in ids])
     conn.commit()
     conn.close()
-    return redirect(url_for('customers'))
+    return redirect(url_for('customer.customers'))
 
 # 客戶詳細資料頁面
 @customer_blueprint .route('/customer/<int:customer_id>')
@@ -65,4 +65,4 @@ def update_customer(customer_id):
                    (name, phone, address, email, notes, customer_id))
     conn.commit()
     conn.close()
-    return redirect(url_for('customers'))
+    return redirect(url_for('customer.customers'))
