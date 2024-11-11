@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供應商管理系統</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .sortable-column {
+            cursor: pointer;
+            position: relative;
+        }
+        .sortable-column i {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">供應商管理系統</h1>
+
+        <!-- 操作按鈕，左側「回首頁」，右側「新增供應商」 -->
+        <div class="d-flex justify-content-between mb-4">
+            <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>
+            <button class="btn btn-primary" onclick="toggleAddSupplierForm()">
+                <i class="fas fa-plus"></i> 新增供應商
+            </button>
+        </div>
+
+        <!-- 新增供應商按鈕
+        <button class="btn btn-primary mt-4 mb-3" onclick="toggleAddSupplierForm()">
+            <i class="fas fa-plus"></i> 新增供應商
+        </button> -->
+
+        <!-- 新增供應商表單（預設隱藏） -->
+        <div id="addSupplierForm" class="card mt-3" style="display: none;">
+            <div class="card-header">
+                <h2>新增供應商</h2>
+            </div>
+            <div class="card-body">
+                <form action="/add_supplier" method="post">
+                    <div class="form-group">
+                        <label for="name">供應商名稱</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="輸入供應商名稱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">電話</label>
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="輸入電話">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">地址</label>
+                        <input type="text" class="form-control" id="address" name="address" placeholder="輸入地址">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">電子郵件</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="輸入電子郵件">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">備註</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="輸入備註"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">新增供應商</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- <h2>供應商列表</h2>
+        <button type="submit" class="btn btn-danger mt-2">批量刪除選取的供應商</button> -->
+        <form action="/delete_suppliers" method="post">
+            <!-- 供應商列表 -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <h2>供應商列表</h2>
+                <button type="submit" class="btn btn-danger" onclick="return confirmDelete()">
+                    <i class="fas fa-trash-alt"></i> 刪除
+                </button>
+            </div>
+            <div class="table-responsive mt-4">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col"><input type="checkbox" id="selectAll"></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('id')">ID <i></i></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('name')">名稱 <i></i></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('phone')">電話 <i></i></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('address')">地址 <i></i></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('email')">電子郵件 <i></i></th>
+                            <th scope="col">備註</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th><input type="text" id="filterId" class="form-control" placeholder="搜尋 ID" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterName" class="form-control" placeholder="搜尋名稱" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterPhone" class="form-control" placeholder="搜尋電話" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterAddress" class="form-control" placeholder="搜尋地址" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterEmail" class="form-control" placeholder="搜尋電子郵件" oninput="filterTable()"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplierTableBody">
+                        {% for supplier in suppliers %}
+                        <tr>
+                            <td><input type="checkbox" name="supplier_ids" value="{{ supplier[0] }}"></td>
+                            <td><a href="/supplier/{{ supplier[0] }}">{{ supplier[0] }}</a></td>
+                            <td>{{ supplier[1] }}</td>
+                            <td>{{ supplier[2] }}</td>
+                            <td>{{ supplier[3] }}</td>
+                            <td>{{ supplier[4] }}</td>
+                            <td>{{ supplier[5] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+
+    <!-- 引入 Bootstrap 和 jQuery 的 JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+
+    <script>
+        // 初始化排序狀態
+        let currentSortColumn = '';
+        let currentSortOrder = 'asc';
+
+        // 顯示/隱藏新增供應商表單
+        function toggleAddSupplierForm() {
+            const form = document.getElementById('addSupplierForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 全選功能
+        document.getElementById('selectAll').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('input[name="supplier_ids"]');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+        
+        // 刪除確認函數
+        function confirmDelete() {
+            return confirm("確定要刪除選取的供應商嗎？");  // 返回 true 表示確定，返回 false 表示取消
+        }
+        
+        // 表頭排序功能
+        function sortTable(column) {
+            const tableBody = document.getElementById('supplierTableBody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const columnIndex = {
+                id: 1,
+                name: 2,
+                phone: 3,
+                address: 4,
+                email: 5
+            }[column];
+
+            // 切換排序方式
+            if (currentSortColumn === column) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortOrder = 'asc';
+            }
+
+            // 根據排序方式和欄位排序
+            rows.sort((a, b) => {
+                const aText = a.children[columnIndex].textContent.trim();
+                const bText = b.children[columnIndex].textContent.trim();
+                return (currentSortOrder === 'asc' ? 1 : -1) * aText.localeCompare(bText);
+            });
+
+            // 清除所有箭頭圖示
+            document.querySelectorAll('.sortable-column i').forEach(icon => icon.className = '');
+
+            // 設定目前排序欄位的箭頭圖示
+            const icon = document.querySelector(`.sortable-column:nth-child(${columnIndex + 1}) i`);
+            icon.className = currentSortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+
+            // 重新附加排序後的行
+            rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        // 即時搜尋功能
+        function filterTable() {
+            const idFilter = document.getElementById('filterId').value.toLowerCase();
+            const nameFilter = document.getElementById('filterName').value.toLowerCase();
+            const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
+            const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
+            const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+            const rows = document.querySelectorAll('#supplierTableBody tr');
+
+            rows.forEach(row => {
+                const [id, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
+                const match = id.includes(idFilter) &&
+                              name.includes(nameFilter) &&
+                              phone.includes(phoneFilter) &&
+                              address.includes(addressFilter) &&
+                              email.includes(emailFilter);
+                row.style.display = match ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

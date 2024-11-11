@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Supplier Management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Supplier Management</h1>
+        <form action="/add_supplier" method="post" class="mb-3">
+            <input type="text" name="name" placeholder="Supplier Name" required>
+            <input type="text" name="phone" placeholder="Phone">
+            <input type="text" name="address" placeholder="Address">
+            <input type="email" name="email" placeholder="Email">
+            <input type="text" name="notes" placeholder="Notes">
+            <button type="submit" class="btn btn-primary">Add Supplier</button>
+        </form>
+        <form action="/delete_suppliers" method="post">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Email</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td><input type="checkbox" name="supplier_ids" value="{{ supplier[0] }}"></td>
+                        <td><a href="/supplier/{{ supplier[0] }}">{{ supplier[0] }}</a></td>
+                        <td>{{ supplier[1] }}</td>
+                        <td>{{ supplier[2] }}</td>
+                        <td>{{ supplier[3] }}</td>
+                        <td>{{ supplier[4] }}</td>
+                        <td>{{ supplier[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-danger">Delete Selected Suppliers</button>
+        </form>
+    </div>
+</body>
+</html>

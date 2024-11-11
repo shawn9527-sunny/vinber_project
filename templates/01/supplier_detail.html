@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Supplier Detail</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Supplier Detail - {{ supplier[1] }}</h1>
+        <form action="/update_supplier/{{ supplier[0] }}" method="post">
+            <input type="text" name="name" value="{{ supplier[1] }}" required>
+            <input type="text" name="phone" value="{{ supplier[2] }}">
+            <input type="text" name="address" value="{{ supplier[3] }}">
+            <input type="email" name="email" value="{{ supplier[4] }}">
+            <input type="text" name="notes" value="{{ supplier[5] }}">
+            <button type="submit" class="btn btn-primary">Update Supplier</button>
+        </form>
+    </div>
+</body>
+</html>

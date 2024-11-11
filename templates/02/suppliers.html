@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供應商管理系統</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">供應商管理系統</h1>
+
+        <!-- 新增供應商表單 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>新增供應商</h2>
+            </div>
+            <div class="card-body">
+                <form action="/add_supplier" method="post">
+                    <div class="form-group">
+                        <label for="name">供應商名稱</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="輸入供應商名稱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">電話</label>
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="輸入電話">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">地址</label>
+                        <input type="text" class="form-control" id="address" name="address" placeholder="輸入地址">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">電子郵件</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="輸入電子郵件">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">備註</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="輸入備註"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">新增供應商</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 供應商列表 -->
+        <div class="mt-5">
+            <h2>供應商列表</h2>
+            <form action="/delete_suppliers" method="post">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">選取</th>
+                                <th scope="col">ID</th>
+                                <th scope="col">名稱</th>
+                                <th scope="col">電話</th>
+                                <th scope="col">地址</th>
+                                <th scope="col">電子郵件</th>
+                                <th scope="col">備註</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for supplier in suppliers %}
+                            <tr>
+                                <td><input type="checkbox" name="supplier_ids" value="{{ supplier[0] }}"></td>
+                                <td><a href="/supplier/{{ supplier[0] }}">{{ supplier[0] }}</a></td>
+                                <td>{{ supplier[1] }}</td>
+                                <td>{{ supplier[2] }}</td>
+                                <td>{{ supplier[3] }}</td>
+                                <td>{{ supplier[4] }}</td>
+                                <td>{{ supplier[5] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-danger">批量刪除選取的供應商</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

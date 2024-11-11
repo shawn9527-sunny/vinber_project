@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客戶詳細資訊</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">客戶詳細資訊</h1>
+
+        <!-- 操作按鈕 -->
+        <div class="d-flex justify-content-between mb-4">
+            <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>
+            <a href="/customers" class="btn btn-secondary"><i class="fas fa-list"></i> 回列表</a>
+        </div>
+
+        <!-- 客戶詳細資訊卡片 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>{{ customer[1] }}</h2> <!-- 客戶名稱 -->
+            </div>
+            <div class="card-body">
+                <form action="/update_customer/{{ customer[0] }}" method="post">
+                    <div class="form-group">
+                        <label for="name">客戶名稱</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ customer[1] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">電話</label>
+                        <input type="text" class="form-control" id="phone" name="phone" value="{{ customer[2] }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">地址</label>
+                        <input type="text" class="form-control" id="address" name="address" value="{{ customer[3] }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">電子郵件</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ customer[4] }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">備註</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ customer[5] }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">更新資料</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Bootstrap 和 Font Awesome 的 JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</body>
+</html>
