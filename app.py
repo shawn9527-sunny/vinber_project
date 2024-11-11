@@ -27,7 +27,6 @@ def init_db():
     conn.close()
 
 init_db()
-
 # 主畫面
 @app.route('/')
 def index():
