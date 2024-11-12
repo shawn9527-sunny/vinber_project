@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">商品管理</h1>
+
+        <!-- 新增商品表單 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3>新增商品</h3>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('product.add_product') }}" method="POST">
+                    <div class="form-group">
+                        <label for="name">商品名稱</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="code_prefix">編號前綴</label>
+                        <input type="text" class="form-control" id="code_prefix" name="code_prefix" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">新增商品</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="table-responsive mt-4">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>商品名稱</th>
+                        <th>編號前綴</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product[1] }}</td>
+                        <td>{{ product[2] }}</td>
+                        <td>
+                            <a href="{{ url_for('product.edit_product', product_id=product[0]) }}" class="btn btn-warning btn-sm">編輯</a>
+                            <form action="{{ url_for('product.delete_product', product_id=product[0]) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">刪除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

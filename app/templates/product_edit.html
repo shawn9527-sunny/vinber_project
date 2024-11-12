@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>編輯商品</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">編輯商品 - {{ product[1] }}</h1>
+        <form action="{{ url_for('product.edit_product', product_id=product[0]) }}" method="POST">
+            <div class="form-group">
+                <label for="name">商品名稱</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ product[1] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="code_prefix">編號前綴</label>
+                <input type="text" class="form-control" id="code_prefix" name="code_prefix" value="{{ product[2] }}" required>
+            </div>
+
+            <h3 class="mt-4">屬性列表</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>屬性名稱</th>
+                        <th>資料類型</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attribute in attributes %}
+                    <tr>
+                        <td><input type="text" name="attribute_names" class="form-control" value="{{ attribute[2] }}"></td>
+                        <td>
+                            <select name="attribute_types" class="form-control">
+                                <option value="TEXT" {% if attribute[3] == 'TEXT' %}selected{% endif %}>文字</option>
+                                <option value="INTEGER" {% if attribute[3] == 'INTEGER' %}selected{% endif %}>整數</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeAttribute({{ attribute[0] }})">刪除</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h4>新增屬性</h4>
+            <div id="newAttributes"></div>
+            <button type="button" class="btn btn-secondary" onclick="addAttribute()">新增屬性</button>
+
+            <button type="submit" class="btn btn-primary mt-4">儲存修改</button>
+        </form>
+    </div>
+
+    <script>
+        // 動態添加新屬性
+        function addAttribute() {
+            const container = document.getElementById("newAttributes");
+            const attributeInput = document.createElement("input");
+            attributeInput.setAttribute("type", "text");
+            attributeInput.setAttribute("name", "new_attribute_names");
+            attributeInput.setAttribute("placeholder", "屬性名稱");
+            attributeInput.classList.add("form-control", "mb-2");
+
+            const dataTypeSelect = document.createElement("select");
+            dataTypeSelect.setAttribute("name", "new_attribute_types");
+            dataTypeSelect.classList.add("form-control", "mb-2");
+            dataTypeSelect.innerHTML = `
+                <option value="TEXT">文字</option>
+                <option value="INTEGER">整數</option>
+            `;
+
+            container.appendChild(attributeInput);
+            container.appendChild(dataTypeSelect);
+        }
+
+        // 刪除現有屬性
+        function removeAttribute(attributeId) {
+            const row = document.querySelector(`tr[data-attribute-id="${attributeId}"]`);
+            if (row) row.remove();
+
+            // 添加一個隱藏字段來通知後端刪除此屬性
+            const container = document.getElementById("newAttributes");
+            const deleteInput = document.createElement("input");
+            deleteInput.setAttribute("type", "hidden");
+            deleteInput.setAttribute("name", "delete_attribute_ids");
+            deleteInput.setAttribute("value", attributeId);
+            container.appendChild(deleteInput);
+        }
+    </script>
+</body>
+</html>
