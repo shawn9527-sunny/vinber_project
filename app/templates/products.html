@@ -9,8 +9,13 @@
     <div class="container mt-5">
         <h1 class="text-center">商品管理</h1>
 
-        <!-- 新增商品表單 -->
-        <div class="card mt-4">
+        <!-- 新增商品按鈕 -->
+        <div class="text-center mb-3">
+            <button class="btn btn-success" onclick="toggleAddProductForm()">新增商品</button>
+        </div>
+
+        <!-- 新增商品表單，默認隱藏 -->
+        <div id="addProductForm" class="card mt-4" style="display: none;">
             <div class="card-header">
                 <h3>新增商品</h3>
             </div>
@@ -56,5 +61,13 @@
             </table>
         </div>
     </div>
+
+    <!-- JavaScript 用於顯示/隱藏新增商品表單 -->
+    <script>
+        function toggleAddProductForm() {
+            const form = document.getElementById('addProductForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>

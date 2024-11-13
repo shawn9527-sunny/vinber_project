@@ -13,7 +13,7 @@ def products():
     conn.close()
     return render_template('products.html', products=products)
 
-# 新增產品頁面
+# 新增產品
 @product_blueprint.route('/add_product', methods=['GET', 'POST'])
 def add_product():
     if request.method == 'POST':
@@ -27,6 +27,17 @@ def add_product():
         flash("產品已新增", "success")
         return redirect(url_for('product.products'))
     return render_template('product_add.html')
+
+# 刪除產品
+@product_blueprint.route('/delete_product/<int:product_id>', methods=['POST'])
+def delete_product(product_id):
+    conn = sqlite3.connect('management_system.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    conn.commit()
+    conn.close()
+    flash("產品已刪除", "success")
+    return redirect(url_for('product.products'))
 
 # 編輯產品頁面
 @product_blueprint.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
@@ -72,15 +83,3 @@ def edit_product(product_id):
     conn.close()
 
     return render_template('product_edit.html', product=product, attributes=attributes)
-
-
-# 刪除產品
-@product_blueprint.route('/delete_product/<int:product_id>', methods=['POST'])
-def delete_product(product_id):
-    conn = sqlite3.connect('management_system.db')
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
-    conn.commit()
-    conn.close()
-    flash("產品已刪除", "success")
-    return redirect(url_for('product.products'))

@@ -11,13 +11,24 @@
         <form action="{{ url_for('product.edit_product', product_id=product[0]) }}" method="POST">
             <div class="form-group">
                 <label for="name">商品名稱</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ product[1] }}" required>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="name" name="name" value="{{ product[1] }}" readonly required>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleInputEdit(this, 'name')">編輯</button>
+                    </div>
+                </div>
             </div>
+            
             <div class="form-group">
                 <label for="code_prefix">編號前綴</label>
-                <input type="text" class="form-control" id="code_prefix" name="code_prefix" value="{{ product[2] }}" required>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="code_prefix" name="code_prefix" value="{{ product[2] }}" readonly required>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleInputEdit(this, 'code_prefix')">編輯</button>
+                    </div>
+                </div>
             </div>
-
+            
             <h3 class="mt-4">屬性列表</h3>
             <table class="table">
                 <thead>
@@ -29,31 +40,66 @@
                 </thead>
                 <tbody>
                     {% for attribute in attributes %}
-                    <tr>
-                        <td><input type="text" name="attribute_names" class="form-control" value="{{ attribute[2] }}"></td>
+                    <tr data-row-id="{{ attribute[0] }}">
                         <td>
-                            <select name="attribute_types" class="form-control">
+                            <input type="text" name="attribute_names" class="form-control" value="{{ attribute[2] }}" disabled>
+                        </td>
+                        <td>
+                            <select name="attribute_types" class="form-control" disabled>
                                 <option value="TEXT" {% if attribute[3] == 'TEXT' %}selected{% endif %}>文字</option>
                                 <option value="INTEGER" {% if attribute[3] == 'INTEGER' %}selected{% endif %}>整數</option>
                             </select>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeAttribute({{ attribute[0] }})">刪除</button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="toggleRowEdit(this, {{ attribute[0] }})">編輯</button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="markAttributeForDeletion({{ attribute[0] }})">刪除</button>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                
             </table>
 
             <h4>新增屬性</h4>
             <div id="newAttributes"></div>
             <button type="button" class="btn btn-secondary" onclick="addAttribute()">新增屬性</button>
-
-            <button type="submit" class="btn btn-primary mt-4">儲存修改</button>
+            <div class="text-center mb-3">
+                <button type="submit" class="btn btn-primary mt-4">儲存修改</button>
+            </div>
         </form>
     </div>
 
     <script>
+        // 切換指定輸入框的編輯模式
+        function toggleInputEdit(button, inputId) {
+            const input = document.getElementById(inputId);
+            input.readOnly = !input.readOnly;  // 切換 readonly 狀態
+
+            // 切換按鈕文字
+            if (button.innerText === "編輯") {
+                button.innerText = "完成";
+            } else {
+                button.innerText = "編輯";
+            }
+        }
+
+        // 局部行的編輯模式切換
+        function toggleRowEdit(button, rowId) {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            const inputs = row.querySelectorAll('input, select');
+
+            // 切換輸入字段的 disabled 屬性
+            inputs.forEach(input => input.disabled = !input.disabled);
+
+            // 切換按鈕文字
+            if (button.innerText === "編輯") {
+                button.innerText = "完成";
+            } else {
+                button.innerText = "編輯";
+                // 暫不提交變更，僅返回到不可編輯狀態
+            }
+        }
+        
         // 動態添加新屬性
         function addAttribute() {
             const container = document.getElementById("newAttributes");
@@ -74,11 +120,14 @@
             container.appendChild(attributeInput);
             container.appendChild(dataTypeSelect);
         }
-
-        // 刪除現有屬性
-        function removeAttribute(attributeId) {
-            const row = document.querySelector(`tr[data-attribute-id="${attributeId}"]`);
-            if (row) row.remove();
+        
+        // 標記屬性為刪除
+        function markAttributeForDeletion(attributeId) {
+            // 根據 data-row-id 選擇該行
+            var row = document.querySelector('tr[data-row-id="' + attributeId + '"]');
+            
+            // 如果找到了該行，則隱藏該行
+            if (row) row.style.display = 'none';
 
             // 添加一個隱藏字段來通知後端刪除此屬性
             const container = document.getElementById("newAttributes");
