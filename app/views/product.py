@@ -52,11 +52,13 @@ def edit_product(product_id):
         cursor.execute("UPDATE products SET name = ?, code_prefix = ? WHERE id = ?", (name, code_prefix, product_id))
 
         # 更新屬性
-        attribute_names = request.form.getlist('attribute_names')
-        attribute_types = request.form.getlist('attribute_types')
-        for i, attribute_name in enumerate(attribute_names):
+        attribute_ids = request.form.getlist('edit_attribute_ids')
+        attribute_names = request.form.getlist('edit_attribute_names')
+        attribute_types = request.form.getlist('edit_attribute_types')
+        for i, attribute_id in enumerate(attribute_ids):
+            attribute_name = attribute_names[i]
             data_type = attribute_types[i]
-            cursor.execute("UPDATE attributes SET name = ?, data_type = ? WHERE id = ?", (attribute_name, data_type, product_id))
+            cursor.execute("UPDATE attributes SET name = ?, data_type = ? WHERE id = ?", (attribute_name, data_type, attribute_id))
 
         # 新增新屬性
         new_attribute_names = request.form.getlist('new_attribute_names')

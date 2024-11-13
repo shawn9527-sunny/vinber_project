@@ -57,7 +57,6 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-                
             </table>
 
             <h4>新增屬性</h4>
@@ -83,23 +82,6 @@
             }
         }
 
-        // 局部行的編輯模式切換
-        function toggleRowEdit(button, rowId) {
-            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
-            const inputs = row.querySelectorAll('input, select');
-
-            // 切換輸入字段的 disabled 屬性
-            inputs.forEach(input => input.disabled = !input.disabled);
-
-            // 切換按鈕文字
-            if (button.innerText === "編輯") {
-                button.innerText = "完成";
-            } else {
-                button.innerText = "編輯";
-                // 暫不提交變更，僅返回到不可編輯狀態
-            }
-        }
-        
         // 動態添加新屬性
         function addAttribute() {
             const container = document.getElementById("newAttributes");
@@ -119,6 +101,45 @@
 
             container.appendChild(attributeInput);
             container.appendChild(dataTypeSelect);
+        }
+        
+        // 局部行的編輯模式切換
+        function toggleRowEdit(button, attributeId) {
+            var row = document.querySelector('tr[data-row-id="' + attributeId + '"]');
+            const attributeName = row.querySelector('[name="attribute_names"]').value;
+            const attributeType = row.querySelector('[name="attribute_types"]').value;
+            const inputs = row.querySelectorAll('input, select');
+
+            // 切換輸入字段的 disabled 屬性
+            inputs.forEach(input => input.disabled = !input.disabled);
+
+            // 切換按鈕文字
+            if (button.innerText === "編輯") {
+                button.innerText = "完成";
+            } else {
+                button.innerText = "編輯";
+                // 添加一個隱藏字段來通知後端更新此屬性
+                const container = document.getElementById("newAttributes");
+                
+                const editIdInput = document.createElement("input");
+                editIdInput.setAttribute("type", "hidden");
+                editIdInput.setAttribute("name", "edit_attribute_ids");
+                editIdInput.setAttribute("value", attributeId);
+
+                const editNameInput = document.createElement("input");
+                editNameInput.setAttribute("type", "hidden");
+                editNameInput.setAttribute("name", "edit_attribute_names");
+                editNameInput.setAttribute("value", attributeName);
+                
+                const editTypeInput = document.createElement("input");
+                editTypeInput.setAttribute("type", "hidden");
+                editTypeInput.setAttribute("name", "edit_attribute_types");
+                editTypeInput.setAttribute("value", attributeType);
+                
+                container.appendChild(editIdInput);
+                container.appendChild(editNameInput);
+                container.appendChild(editTypeInput);
+            }
         }
         
         // 標記屬性為刪除
