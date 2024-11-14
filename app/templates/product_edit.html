@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>編輯商品</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        tr.dragging {
+            opacity: 0.5;
+        }
+
+        .order-column {
+            cursor: move; /* Makes the order column visually indicate that it's draggable */
+        }
+
+    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -13,7 +23,7 @@
             <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>
             <a href="/products" class="btn btn-secondary"><i class="fas fa-list"></i> 回列表</a>
         </div>
-        <form action="{{ url_for('product.edit_product', product_id=product[0]) }}" method="POST">
+        <form id="editProductForm" action="{{ url_for('product.edit_product', product_id=product[0]) }}" method="POST">
             <div class="form-group">
                 <label for="name">商品名稱</label>
                 <div class="input-group">
@@ -35,7 +45,7 @@
             </div>
             
             <h3 class="mt-4">屬性列表</h3>
-            <table class="table">
+            <!-- <table class="table">
                 <thead>
                     <tr>
                         <th>屬性名稱</th>
@@ -62,7 +72,40 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+            </table> -->
+            <table class="table" id="attributesTable">
+                <thead>
+                    <tr>
+                        <th>順序</th>
+                        <th>屬性名稱</th>
+                        <th>資料類型</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attribute in attributes %}
+                    <tr data-row-id="{{ attribute[0] }}" draggable="true">
+                        <td class="order-column">
+                            <span class="order-index">{{ loop.index }}</span> <!-- Display the order index -->
+                        </td>
+                        <td>
+                            <input type="text" name="attribute_names" class="form-control" value="{{ attribute[2] }}" disabled>
+                        </td>
+                        <td>
+                            <select name="attribute_types" class="form-control" disabled>
+                                <option value="TEXT" {% if attribute[3] == 'TEXT' %}selected{% endif %}>文字</option>
+                                <option value="INTEGER" {% if attribute[3] == 'INTEGER' %}selected{% endif %}>整數</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="toggleRowEdit(this, {{ attribute[0] }})">編輯</button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="markAttributeForDeletion({{ attribute[0] }})">刪除</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
+            
             
             <div id="newAttributes">
                 <button type="button" class="btn btn-secondary" onclick="addAttribute()">新增屬性</button>
@@ -80,6 +123,95 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
     <script>
+        //test moveable 
+        const tableBody = document.getElementById("attributesTable").querySelector("tbody");
+
+        // Enable drag functionality
+        tableBody.addEventListener("dragstart", (event) => {
+            console.log("dragstart", event.target);
+            event.target.classList.add("dragging");
+        });
+
+        tableBody.addEventListener("dragend", (event) => {
+            console.log("dragend", event.target);
+            event.target.classList.remove("dragging");
+            updateAttributeOrder(); // Update the order after dragging
+        });
+
+        tableBody.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            const draggingRow = document.querySelector(".dragging");
+            const targetRow = event.target.closest("tr");
+            // console.log("Dragging row:", draggingRow);
+            // console.log("Target row:", targetRow);
+
+            if (targetRow && targetRow !== draggingRow) {
+                tableBody.insertBefore(draggingRow, targetRow);
+                // console.log("Row moved.");
+            }
+        });
+
+
+        tableBody.addEventListener("drop", (event) => {
+            const draggingRow = document.querySelector(".dragging");
+            if (draggingRow) {
+                updateAttributeOrder();
+            }
+        });
+
+        // Function to update the order of the rows
+        function updateAttributeOrder() {
+            const rows = document.querySelectorAll("tr[data-row-id]");
+            console.log("Number of rows found:", rows.length);
+            rows.forEach((row, index) => {
+            const orderColumn = row.querySelector(".order-index");
+                console.log("Row element:", row);  // Log each row element
+                console.log("Order column found:", orderColumn);  // Check if orderColumn is found
+
+                if (orderColumn) {
+                    orderColumn.textContent = index + 1;
+                    console.log("Row " + index + " updated:", orderColumn.textContent);
+                } else {
+                    console.log("No order column found for row", index);
+                }
+            });
+        }
+
+
+
+        // Save the updated order to the backend
+        document.getElementById("editProductForm").onsubmit = function (event) {
+            console.log("Form submit event triggered!");  // 用來確認事件是否觸發
+
+            event.preventDefault();  // 防止表單的預設提交行為，進行自訂操作後再提交
+
+            const rows = document.querySelectorAll("tr[data-row-id]");
+            const orderedIds = [];
+
+            console.log("Rows found:", rows.length);  // 檢查是否找到表格行
+
+            rows.forEach((row) => {
+                const attributeId = row.dataset.rowId;
+                orderedIds.push(attributeId);
+            });
+
+            console.log("Ordered IDs:", orderedIds);  // 檢查有沒有正確取得排序 ID
+
+            const orderInput = document.createElement("input");
+            orderInput.setAttribute("type", "hidden");
+            orderInput.setAttribute("name", "attribute_order");
+            orderInput.setAttribute("value", JSON.stringify(orderedIds));  // Send the list of IDs in order
+
+            console.log("Sending updated order: ", JSON.stringify(orderedIds)); // Debug line to check the output
+
+            this.appendChild(orderInput); // Add the input to the form
+
+            // 手動提交表單
+            this.submit();  // 在添加隱藏欄位後，再提交表單
+        };
+
+
+
         // 切換指定輸入框的編輯模式
         function toggleInputEdit(button, inputId) {
             const input = document.getElementById(inputId);

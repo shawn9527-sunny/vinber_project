@@ -44,7 +44,9 @@ def init_db():
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         )
     ''')
-
+    # cursor.execute('''
+    #     ALTER TABLE attributes ADD COLUMN order_index INTEGER;
+    # ''')
     # 建立 users 表
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
