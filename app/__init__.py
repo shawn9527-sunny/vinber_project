@@ -3,7 +3,9 @@ from .views import db
 from .views.supplier import supplier_blueprint
 from .views.customer import customer_blueprint
 from .views.product import product_blueprint
+from .views.purchase import purchase_blueprint
 from .views.index import index_blueprint
+
 
 def create_app():
     app = Flask(__name__)
@@ -17,6 +19,7 @@ def create_app():
     app.register_blueprint(customer_blueprint)
     app.register_blueprint(index_blueprint)
     app.register_blueprint(product_blueprint)
+    app.register_blueprint(purchase_blueprint)
     with app.app_context():
         db.init_db()
     
