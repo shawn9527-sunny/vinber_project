@@ -92,22 +92,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for purchase in purchases %}
-                    <tr>
-                        <td>{{ purchase['purchase_order_number'] }}</td>
-                        <td>{{ purchase['supplier_id'] }}</td>
-                        <td>{{ purchase['product_name'] }}</td>
-                        <td>{{ purchase['cost'] }}</td>
-                        <td>{{ purchase['quantity'] }}</td>
-                        <td>
-                            <a href="{{ url_for('purchase.view', purchase_id=purchase['id']) }}" class="btn btn-info btn-sm">查看</a>
-                            <form action="{{ url_for('purchase.delete', purchase_id=purchase['id']) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">刪除</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                    {% if purchases %}
+                        {% for purchase in purchases %}
+                        <tr>
+                            <td>{{ purchase['purchase_order_number'] }}</td> <!-- 顯示進貨單號 -->
+                            <td>{{ purchase['supplier_name'] }}</td> <!-- 顯示供應商名稱 -->
+                            <td>{{ purchase['product_name'] }}</td> <!-- 顯示產品名稱 -->
+                            <td>{{ purchase['cost'] }}</td> <!-- 顯示進貨成本 -->
+                            <td>{{ purchase['sn_code'] }}</td> <!-- 顯示 SN Code -->
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">暫無進貨單</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
+                
             </table>
         </div>
     </div>

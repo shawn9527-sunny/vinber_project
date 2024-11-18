@@ -38,6 +38,18 @@ def purchase():
         flash("進貨資料已成功添加", "success")
         return redirect(url_for('purchase.purchase'))
 
+    # 查詢現有進貨單資料，聯合產品與供應商獲取詳細信息
+    cursor.execute('''
+        SELECT p.id, p.purchase_order_number, p.sn_code, 
+               pr.name AS product_name, 
+               p.cost, 
+               s.name AS supplier_name
+        FROM purchases p
+        JOIN products pr ON p.product_name = pr.id
+        JOIN suppliers s ON p.supplier_id = s.id
+    ''')
+    purchases = cursor.fetchall()
+    
     # 從資料庫中獲取產品列表
     cursor.execute("SELECT id, name FROM products")
     products = cursor.fetchall()
@@ -48,8 +60,8 @@ def purchase():
 
     conn.close()
 
-    # 傳遞產品和供應商數據到模板
-    return render_template('purchase.html', products=products, suppliers=suppliers)
+    # 傳遞產品、供應商、進貨單數據到模板
+    return render_template('purchase.html', products=products, suppliers=suppliers, purchases=[dict(row) for row in purchases])
 
 # 取得產品屬性 API
 @purchase_blueprint.route('/get_attributes/<int:product_id>', methods=['GET'])
