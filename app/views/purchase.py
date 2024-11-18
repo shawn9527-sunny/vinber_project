@@ -16,26 +16,25 @@ def purchase():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        # 獲取進貨單提交的數據
-        product_id = request.form['product_id']
-        sn_code = request.form['sn_code']
-        cost = float(request.form['cost'])
-        supplier_id = int(request.form['supplier_id'])
+        supplier_id = request.form.get('supplier_id')
+        cost = request.form.get('cost')
+        product_id = request.form.get('product_id')
+        sn_codes = request.form.getlist('sn_codes[]')  # 獲取所有 SN Code
 
-        # 取得產品名稱
-        cursor.execute("SELECT name FROM products WHERE id = ?", (product_id,))
-        product_name = cursor.fetchone()['name']
+        if not sn_codes:
+            flash("請輸入至少一個 SN Code", "danger")
+            return redirect(url_for('purchase.purchase'))
 
-        # 插入進貨記錄
-        purchase_order_number = generate_purchase_order_number(cursor)  # 生成進貨單號
-        cursor.execute('''
-            INSERT INTO purchases (purchase_order_number, sn_code, product_name, cost, supplier_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (purchase_order_number, sn_code, product_name, cost, supplier_id))
-        
+        # 處理每個 SN Code
+        for sn_code in sn_codes:
+            purchase_order_number = generate_purchase_order_number(cursor)
+            cursor.execute('''
+                INSERT INTO purchases (purchase_order_number, sn_code, product_name, cost, supplier_id)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (purchase_order_number, sn_code, product_id, cost, supplier_id))
+
         conn.commit()
         conn.close()
-
         flash("進貨資料已成功添加", "success")
         return redirect(url_for('purchase.purchase'))
 
