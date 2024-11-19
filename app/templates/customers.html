@@ -22,7 +22,14 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">客戶管理系統</h1>
-        
+        <!-- 顯示後端傳遞的錯誤或成功消息 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <!-- 操作按鈕，左側「回首頁」，右側「新增客戶」 -->
         <div class="d-flex justify-content-between mb-4">
             <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>

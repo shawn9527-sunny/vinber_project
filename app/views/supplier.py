@@ -37,6 +37,14 @@ def add_supplier():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # 驗證 taxID 是否唯一
+    cursor.execute("SELECT 1 FROM suppliers WHERE taxID = ?", (taxID,))
+    if cursor.fetchone():
+        print("123")
+        conn.close()
+        flash("TaxID 重複，請輸入唯一的公司統編！", "danger")
+        return redirect(url_for('supplier.suppliers'))
+
     try:
         cursor.execute(
             "INSERT INTO suppliers (name, phone, address, email, notes, taxID) VALUES (?, ?, ?, ?, ?, ?)", 

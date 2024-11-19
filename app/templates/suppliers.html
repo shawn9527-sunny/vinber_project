@@ -22,7 +22,14 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">供應商管理系統</h1>
-
+        <!-- 顯示後端傳遞的錯誤或成功消息 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <!-- 操作按鈕 -->
         <div class="d-flex justify-content-between mb-4">
             <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>
@@ -82,12 +89,21 @@
                     <thead>
                         <tr>
                             <th scope="col"><input type="checkbox" id="selectAll"></th>
-                            <th scope="col" class="sortable-column" onclick="sortTable('taxID')">公司統編 <i></i></th>
+                            <th scope="col" class="sortable-column" onclick="sortTable('taxID')">公司統編 (TaxID) <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('name')">名稱 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('phone')">電話 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('address')">地址 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('email')">電子郵件 <i></i></th>
                             <th scope="col">備註</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th><input type="text" id="filterTaxID" class="form-control" placeholder="搜尋統編" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterName" class="form-control" placeholder="搜尋名稱" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterPhone" class="form-control" placeholder="搜尋電話" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterAddress" class="form-control" placeholder="搜尋地址" oninput="filterTable()"></th>
+                            <th><input type="text" id="filterEmail" class="form-control" placeholder="搜尋電子郵件" oninput="filterTable()"></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="supplierTableBody">
@@ -95,7 +111,6 @@
                         <tr>
                             <td><input type="checkbox" name="supplier_ids" value="{{ supplier['taxID'] }}"></td>
                             <td><a href="/supplier/{{ supplier['taxID'] }}">{{ supplier['taxID'] }}</a></td>
-                            <!-- <td>{{ supplier['taxID'] }}</td> -->
                             <td>{{ supplier['name'] }}</td>
                             <td>{{ supplier['phone'] }}</td>
                             <td>{{ supplier['address'] }}</td>
@@ -110,18 +125,76 @@
     </div>
 
     <script>
+        let currentSortColumn = '';
+        let currentSortOrder = 'asc';
+
+        // 顯示/隱藏新增供應商表單
         function toggleAddSupplierForm() {
             const form = document.getElementById('addSupplierForm');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
 
+        // 全選功能
         document.getElementById('selectAll').addEventListener('click', function() {
             const checkboxes = document.querySelectorAll('input[name="supplier_ids"]');
             checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         });
 
+        // 刪除確認函數
         function confirmDelete() {
-            return confirm("確定要刪除選取的供應商嗎？這將根據公司統編 (TaxID) 刪除。");
+            return confirm("確定要刪除選取的供應商嗎？");
+        }
+
+        // 表頭排序功能
+        function sortTable(column) {
+            const tableBody = document.getElementById('supplierTableBody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const columnIndex = {
+                taxID: 1,
+                name: 2,
+                phone: 3,
+                address: 4,
+                email: 5
+            }[column];
+
+            if (currentSortColumn === column) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortOrder = 'asc';
+            }
+
+            rows.sort((a, b) => {
+                const aText = a.children[columnIndex].textContent.trim();
+                const bText = b.children[columnIndex].textContent.trim();
+                return (currentSortOrder === 'asc' ? 1 : -1) * aText.localeCompare(bText);
+            });
+
+            document.querySelectorAll('.sortable-column i').forEach(icon => icon.className = '');
+            const icon = document.querySelector(`.sortable-column:nth-child(${columnIndex + 1}) i`);
+            icon.className = currentSortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+
+            rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        // 即時搜尋功能
+        function filterTable() {
+            const taxIDFilter = document.getElementById('filterTaxID').value.toLowerCase();
+            const nameFilter = document.getElementById('filterName').value.toLowerCase();
+            const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
+            const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
+            const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+            const rows = document.querySelectorAll('#supplierTableBody tr');
+
+            rows.forEach(row => {
+                const [taxID, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
+                const match = taxID.includes(taxIDFilter) &&
+                              name.includes(nameFilter) &&
+                              phone.includes(phoneFilter) &&
+                              address.includes(addressFilter) &&
+                              email.includes(emailFilter);
+                row.style.display = match ? '' : 'none';
+            });
         }
     </script>
 </body>
