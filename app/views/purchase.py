@@ -61,7 +61,7 @@ def purchase():
     conn.close()
 
     # 傳遞產品、供應商、進貨單數據到模板
-    return render_template('purchase.html', products=products, suppliers=suppliers, purchases=[dict(row) for row in purchases])
+    return render_template('purchase.html', products=products, suppliers=suppliers, purchases=purchases)
 
 # 取得產品屬性 API
 @purchase_blueprint.route('/get_attributes/<int:product_id>', methods=['GET'])

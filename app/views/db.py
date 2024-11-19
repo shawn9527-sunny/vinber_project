@@ -14,7 +14,9 @@ def init_db():
                         email TEXT,
                         notes TEXT
                         )''')
-
+    # cursor.execute('''
+    #     ALTER TABLE suppliers ADD COLUMN taxID TEXT UNIQUE NOT NULL;
+    # ''')
     # 建立 customers 表
     cursor.execute('''CREATE TABLE IF NOT EXISTS customers (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
