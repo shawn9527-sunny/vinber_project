@@ -19,7 +19,7 @@
         <!-- 供應商詳細資訊卡片 -->
         <div class="card mt-4">
             <div class="card-header">
-                <h2>{{ supplier[1] }}</h2> <!-- 供應商名稱 -->
+                <h2>{{ supplier[1] + '('+ supplier['taxID'] | string +')' }}</h2> <!-- 供應商名稱 -->
             </div>
             <div class="card-body">
                 <form action="/update_supplier/{{ supplier[0] }}" method="post">
