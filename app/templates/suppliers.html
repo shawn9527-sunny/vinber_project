@@ -184,20 +184,26 @@
 
         // 即時搜尋功能
         function filterTable() {
-            const taxIDFilter = document.getElementById('filterTaxID').value.toLowerCase();
+            const idFilter = document.getElementById('filterTaxID').value.toLowerCase();
             const nameFilter = document.getElementById('filterName').value.toLowerCase();
             const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
             const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
-            const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+
             const rows = document.querySelectorAll('#supplierTableBody tr');
 
             rows.forEach(row => {
-                const [taxID, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
-                const match = taxID.includes(taxIDFilter) &&
-                              name.includes(nameFilter) &&
-                              phone.includes(phoneFilter) &&
-                              address.includes(addressFilter) &&
-                              email.includes(emailFilter);
+                const id = row.children[1].textContent.trim().toLowerCase();
+                const name = row.children[2].textContent.trim().toLowerCase();
+                const phone = row.children[3].textContent.trim().toLowerCase();
+                const address = row.children[4].querySelector('a') 
+                    ? row.children[4].querySelector('a').textContent.trim().toLowerCase() 
+                    : ''; // 如果地址欄沒有超連結，默認為空字符串
+
+                const match = id.includes(idFilter) &&
+                            name.includes(nameFilter) &&
+                            phone.includes(phoneFilter) &&
+                            address.includes(addressFilter)
+
                 row.style.display = match ? '' : 'none';
             });
         }

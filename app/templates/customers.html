@@ -135,20 +135,24 @@
         let currentSortColumn = '';
         let currentSortOrder = 'asc';
 
+        // 顯示/隱藏新增供應商表單
         function toggleAddCustomerForm() {
             const form = document.getElementById('addCustomerForm');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
 
+        // 全選功能
         document.getElementById('selectAll').addEventListener('click', function() {
             const checkboxes = document.querySelectorAll('input[name="customer_ids"]');
             checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         });
 
+        // 刪除確認函數
         function confirmDelete() {
             return confirm("確定要刪除選取的客戶嗎？");
         }
-
+        
+        // 表頭排序功能
         function sortTable(column) {
             const tableBody = document.getElementById('customerTableBody');
             const rows = Array.from(tableBody.querySelectorAll('tr'));
@@ -179,25 +183,51 @@
 
             rows.forEach(row => tableBody.appendChild(row));
         }
+        
+        // 即時搜尋功能
+        // function filterTable() {
+        //     const idFilter = document.getElementById('filterId').value.toLowerCase();
+        //     const nameFilter = document.getElementById('filterName').value.toLowerCase();
+        //     const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
+        //     const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
+        //     const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+        //     const rows = document.querySelectorAll('#customerTableBody tr');
 
+        //     rows.forEach(row => {
+        //         const [id, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
+        //         const match = id.includes(idFilter) &&
+        //                       name.includes(nameFilter) &&
+        //                       phone.includes(phoneFilter) &&
+        //                       address.includes(addressFilter) &&
+        //                       email.includes(emailFilter);
+        //         row.style.display = match ? '' : 'none';
+        //     });
+        // }
         function filterTable() {
             const idFilter = document.getElementById('filterId').value.toLowerCase();
             const nameFilter = document.getElementById('filterName').value.toLowerCase();
             const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
             const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
-            const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
+
             const rows = document.querySelectorAll('#customerTableBody tr');
 
             rows.forEach(row => {
-                const [id, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
+                const id = row.children[1].textContent.trim().toLowerCase();
+                const name = row.children[2].textContent.trim().toLowerCase();
+                const phone = row.children[3].textContent.trim().toLowerCase();
+                const address = row.children[4].querySelector('a') 
+                    ? row.children[4].querySelector('a').textContent.trim().toLowerCase() 
+                    : ''; // 如果地址欄沒有超連結，默認為空字符串
+
                 const match = id.includes(idFilter) &&
-                              name.includes(nameFilter) &&
-                              phone.includes(phoneFilter) &&
-                              address.includes(addressFilter) &&
-                              email.includes(emailFilter);
+                            name.includes(nameFilter) &&
+                            phone.includes(phoneFilter) &&
+                            address.includes(addressFilter)
+
                 row.style.display = match ? '' : 'none';
             });
         }
+
     </script>
 </body>
 </html>
