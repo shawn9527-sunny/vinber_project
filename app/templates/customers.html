@@ -185,24 +185,6 @@
         }
         
         // 即時搜尋功能
-        // function filterTable() {
-        //     const idFilter = document.getElementById('filterId').value.toLowerCase();
-        //     const nameFilter = document.getElementById('filterName').value.toLowerCase();
-        //     const phoneFilter = document.getElementById('filterPhone').value.toLowerCase();
-        //     const addressFilter = document.getElementById('filterAddress').value.toLowerCase();
-        //     const emailFilter = document.getElementById('filterEmail').value.toLowerCase();
-        //     const rows = document.querySelectorAll('#customerTableBody tr');
-
-        //     rows.forEach(row => {
-        //         const [id, name, phone, address, email] = Array.from(row.children).slice(1, 6).map(cell => cell.textContent.toLowerCase());
-        //         const match = id.includes(idFilter) &&
-        //                       name.includes(nameFilter) &&
-        //                       phone.includes(phoneFilter) &&
-        //                       address.includes(addressFilter) &&
-        //                       email.includes(emailFilter);
-        //         row.style.display = match ? '' : 'none';
-        //     });
-        // }
         function filterTable() {
             const idFilter = document.getElementById('filterId').value.toLowerCase();
             const nameFilter = document.getElementById('filterName').value.toLowerCase();
