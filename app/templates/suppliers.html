@@ -93,8 +93,6 @@
                             <th scope="col" class="sortable-column" onclick="sortTable('name')">名稱 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('phone')">電話 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('address')">地址 <i></i></th>
-                            <th scope="col" class="sortable-column" onclick="sortTable('email')">電子郵件 <i></i></th>
-                            <th scope="col">備註</th>
                         </tr>
                         <tr>
                             <th></th>
@@ -102,8 +100,6 @@
                             <th><input type="text" id="filterName" class="form-control" placeholder="搜尋名稱" oninput="filterTable()"></th>
                             <th><input type="text" id="filterPhone" class="form-control" placeholder="搜尋電話" oninput="filterTable()"></th>
                             <th><input type="text" id="filterAddress" class="form-control" placeholder="搜尋地址" oninput="filterTable()"></th>
-                            <th><input type="text" id="filterEmail" class="form-control" placeholder="搜尋電子郵件" oninput="filterTable()"></th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="supplierTableBody">
@@ -113,9 +109,18 @@
                             <td><a href="/supplier/{{ supplier['taxID'] }}">{{ supplier['taxID'] }}</a></td>
                             <td>{{ supplier['name'] }}</td>
                             <td>{{ supplier['phone'] }}</td>
-                            <td>{{ supplier['address'] }}</td>
-                            <td>{{ supplier['email'] }}</td>
-                            <td>{{ supplier['notes'] }}</td>
+                            <!-- <td>{{ supplier['address'] }}</td> -->
+                            <td>
+                                {% if supplier['address'] %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ supplier['address'] }}" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer">
+                                    {{ supplier['address'] }}
+                                </a>
+                                {% else %}
+                                無地址
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

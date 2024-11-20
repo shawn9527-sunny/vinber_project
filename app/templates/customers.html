@@ -96,7 +96,6 @@
                             <th scope="col" class="sortable-column" onclick="sortTable('name')">名稱 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('phone')">電話 <i></i></th>
                             <th scope="col" class="sortable-column" onclick="sortTable('address')">地址 <i></i></th>
-                            <th scope="col" class="sortable-column" onclick="sortTable('email')">電子郵件 <i></i></th>
                         </tr>
                         <tr>
                             <th></th>
@@ -104,7 +103,6 @@
                             <th><input type="text" id="filterName" class="form-control" placeholder="搜尋名稱" oninput="filterTable()"></th>
                             <th><input type="text" id="filterPhone" class="form-control" placeholder="搜尋電話" oninput="filterTable()"></th>
                             <th><input type="text" id="filterAddress" class="form-control" placeholder="搜尋地址" oninput="filterTable()"></th>
-                            <th><input type="text" id="filterEmail" class="form-control" placeholder="搜尋電子郵件" oninput="filterTable()"></th>
                         </tr>
                     </thead>
                     <tbody id="customerTableBody">
@@ -114,8 +112,17 @@
                             <td><a href="/customer/{{ customer['id'] }}">{{ customer['id'] }}</a></td>
                             <td>{{ customer['name'] }}</td>
                             <td>{{ customer['phone'] }}</td>
-                            <td>{{ customer['address'] }}</td>
-                            <td>{{ customer['email'] }}</td>
+                            <td>
+                                {% if customer['address'] %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ customer['address'] }}" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer">
+                                    {{ customer['address'] }}
+                                </a>
+                                {% else %}
+                                無地址
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
