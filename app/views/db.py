@@ -54,22 +54,22 @@ def init_db():
     # 進貨表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS purchases (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sn_code TEXT NOT NULL,                 -- 唯一的序號
-            purchase_order_number TEXT NOT NULL,   -- 進貨單號
-            product_name TEXT NOT NULL,            -- 當時的產品名稱快照
-            cost REAL NOT NULL,                    -- 進貨成本
-            supplier_id INTEGER,                   -- 供應商 ID
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL
+            id TEXT PRIMARY KEY,  -- SN Code，唯一值
+            supplier_id TEXT NOT NULL,
+            purchase_order_number TEXT NOT NULL,
+            product_id INTEGER NOT NULL,
+            cost REAL NOT NULL,  -- 單價
+            FOREIGN KEY (supplier_id) REFERENCES suppliers(taxid),
+            FOREIGN KEY (product_id) REFERENCES products(id)
         );
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS purchase_attributes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            purchase_id INTEGER NOT NULL,          -- 關聯到 purchases 表
-            attribute_name TEXT NOT NULL,          -- 屬性名稱（當時的快照）
-            attribute_value TEXT,                  -- 屬性值
-            FOREIGN KEY (purchase_id) REFERENCES purchases(id) ON DELETE CASCADE
+            purchase_id TEXT NOT NULL,  -- 對應 purchases 表的 SN Code
+            attribute_name TEXT NOT NULL,
+            attribute_value TEXT NOT NULL,
+            FOREIGN KEY (purchase_id) REFERENCES purchases(id)
         );
     ''')
 

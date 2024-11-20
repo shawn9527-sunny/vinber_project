@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <title>進貨管理</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 引入 select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- 引入 select2 JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
-        /* 新建進貨單區域樣式 */
         #purchase-form {
-            background-color: #f8f9fa; /* 淺灰色背景 */
-            border: 1px solid #ced4da; /* 淺灰色邊框 */
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
             padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
@@ -23,127 +18,112 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">進貨管理</h1>
-
-        <!-- 操作按鈕，左側「回首頁」，右側「新建進貨單按鈕」 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div class="d-flex justify-content-between mb-4">
             <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> 回首頁</a>
             <button class="btn btn-success" onclick="togglePurchaseForm()">新建進貨單</button>
         </div>
 
-        <!-- 進貨表單，默認隱藏 -->
+        <!-- 進貨表單 -->
         <div id="purchase-form" style="display: none;">
-            <form action="{{ url_for('purchase.purchase') }}" method="POST">
-                <!-- 供應商下拉選單 -->
+            <form id="purchaseForm" action="{{ url_for('purchase.purchase') }}" method="POST">
                 <div class="form-group">
                     <label for="supplier_id">供應商</label>
-                    <select class="form-control" id="supplier_id" name="supplier_id" style="width: 100%;" required>
+                    <select class="form-control" id="supplier_id" name="supplier_id" required>
                         <option value="" disabled selected>請選擇供應商</option>
                         {% for supplier in suppliers %}
-                        <option value="{{ supplier['id'] }}">{{ supplier['name'] }}</option>
+                        <option value="{{ supplier['taxid'] }}">{{ supplier['name'] }}</option>
                         {% endfor %}
                     </select>
                 </div>
+        
+                <!-- 動態產品輸入 -->
+                <div id="products-container"></div>
+                <button type="button" class="btn btn-info" onclick="addProduct()">新增產品</button>
+                <button type="submit" class="btn btn-primary mt-4">提交進貨</button>
+            </form>
+        </div>
 
-                <!-- 進貨成本 -->
-                <div class="form-group">
-                    <label for="cost">進貨成本</label>
-                    <input type="number" step="0.01" class="form-control" id="cost" name="cost" required>
-                </div>
+        <!-- 進貨單列表 -->
+        <h2 class="text-center mt-5">進貨單列表</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>進貨單號</th>
+                        <th>供應商名稱</th>
+                        <th>進貨成本</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr>
+                        <td>{{ purchase['purchase_order_number'] }}</td>
+                        <td>{{ purchase['supplier_name'] }}</td>
+                        <td>{{ purchase['total_cost'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                <!-- 選擇產品 -->
+    <script>
+        function togglePurchaseForm() {
+            const form = document.getElementById('purchase-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addProduct() {
+            const container = document.getElementById('products-container');
+            const productIndex = container.children.length;
+
+            const productGroup = document.createElement('div');
+            productGroup.className = "product-group mt-4 p-3 border rounded";
+            productGroup.innerHTML = `
+                <h5>產品 ${productIndex + 1}</h5>
                 <div class="form-group">
-                    <label for="product_id">選擇產品</label>
-                    <select class="form-control" id="product_id" name="product_id" required onchange="fetchAttributes()">
+                    <label for="product_${productIndex}_id">選擇產品</label>
+                    <select class="form-control" id="product_${productIndex}_id" name="products[${productIndex}][product_id]" required onchange="fetchAttributes(${productIndex})">
                         <option value="" disabled selected>請選擇一個產品</option>
                         {% for product in products %}
                         <option value="{{ product['id'] }}">{{ product['name'] }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
-                <!-- 動態生成的屬性輸入框 -->
-                <div id="attributes-container"></div>
-
-                <!-- 進貨數量輸入框 -->
                 <div class="form-group">
-                    <label for="quantity">進貨數量</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" min="1" required onchange="generateSnCodeInputs()">
+                    <label for="product_${productIndex}_cost">產品單價</label>
+                    <input type="number" class="form-control" id="product_${productIndex}_cost" name="products[${productIndex}][cost]" step="0.01" required>
                 </div>
-
-                <!-- SN Code 輸入框容器 -->
-                <div id="sn-code-container"></div>
-
-                <button type="submit" class="btn btn-primary">提交進貨</button>
-            </form>
-        </div>
-
-        <!-- 進貨單列表 -->
-        <h2 class="text-center mt-5">現有進貨單</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>進貨單號</th>
-                        <th>供應商 ID</th>
-                        <th>產品名稱</th>
-                        <th>進貨成本</th>
-                        <th>進貨數量</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if purchases %}
-                        {% for purchase in purchases %}
-                        <tr>
-                            <td>{{ purchase['purchase_order_number'] }}</td> <!-- 顯示進貨單號 -->
-                            <td>{{ purchase['supplier_name'] }}</td> <!-- 顯示供應商名稱 -->
-                            <td>{{ purchase['product_name'] }}</td> <!-- 顯示產品名稱 -->
-                            <td>{{ purchase['cost'] }}</td> <!-- 顯示進貨成本 -->
-                            <td>{{ purchase['sn_code'] }}</td> <!-- 顯示 SN Code -->
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center">暫無進貨單</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-                
-            </table>
-        </div>
-    </div>
-
-    <script>
-        // 啟用 select2 以增加供應商選擇搜尋功能
-        $(document).ready(function() {
-            $('#supplier_id').select2({
-                placeholder: '請選擇供應商',
-                allowClear: true
-            });
-        });
-
-        // 切換進貨表單顯示/隱藏
-        function togglePurchaseForm() {
-            const form = document.getElementById('purchase-form');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                <div id="attributes_${productIndex}"></div>
+                <div class="form-group">
+                    <label for="quantity_${productIndex}">進貨數量</label>
+                    <input type="number" class="form-control" id="quantity_${productIndex}" name="products[${productIndex}][quantity]" min="1" required onchange="generateSnCodeInputs(${productIndex})">
+                </div>
+                <div id="sn-code-container_${productIndex}"></div>
+            `;
+            container.appendChild(productGroup);
         }
 
-        // 根據選擇的產品 ID 獲取屬性並顯示輸入框
-        function fetchAttributes() {
-            const productId = document.getElementById("product_id").value;
-            const attributesContainer = document.getElementById("attributes-container");
-            attributesContainer.innerHTML = ""; // 清空容器
+        function fetchAttributes(productIndex) {
+            const productId = document.getElementById(`product_${productIndex}_id`).value;
+            const attributesContainer = document.getElementById(`attributes_${productIndex}`);
+            attributesContainer.innerHTML = "";
 
             if (productId) {
                 $.getJSON(`/get_attributes/${productId}`, function(attributes) {
                     attributes.forEach(attribute => {
                         const attributeInput = document.createElement("div");
                         attributeInput.className = "form-group";
-
-                        // 動態創建屬性輸入框
                         attributeInput.innerHTML = `
-                            <label for="${attribute.name}">${attribute.name}</label>
-                            <input type="text" class="form-control" name="attribute_${attribute.name}" placeholder="輸入 ${attribute.name}">
+                            <label>${attribute.name}</label>
+                            <input type="text" class="form-control" name="products[${productIndex}][attributes][${attribute.name}]" placeholder="輸入 ${attribute.name}">
                         `;
                         attributesContainer.appendChild(attributeInput);
                     });
@@ -151,24 +131,76 @@
             }
         }
 
-        // 根據進貨數量生成對應的 SN Code 輸入框
-        function generateSnCodeInputs() {
-            const quantity = document.getElementById("quantity").value;
-            const snCodeContainer = document.getElementById("sn-code-container");
-            snCodeContainer.innerHTML = ""; // 清空現有的 SN Code 輸入框
+        function generateSnCodeInputs(productIndex) {
+            const quantity = document.getElementById(`quantity_${productIndex}`).value;
+            const snCodeContainer = document.getElementById(`sn-code-container_${productIndex}`);
+            snCodeContainer.innerHTML = "";
 
             for (let i = 1; i <= quantity; i++) {
                 const snCodeInput = document.createElement("div");
                 snCodeInput.className = "form-group";
-
-                // 動態創建 SN Code 輸入框
                 snCodeInput.innerHTML = `
-                    <label for="sn_code_${i}">SN Code ${i}</label>
-                    <input type="text" class="form-control" id="sn_code_${i}" name="sn_codes[]" placeholder="輸入 SN Code ${i}" required>
+                    <label>SN Code ${i}</label>
+                    <input type="text" class="form-control" name="products[${productIndex}][sn_codes][]" required>
                 `;
                 snCodeContainer.appendChild(snCodeInput);
             }
         }
+        
+        document.getElementById('purchaseForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // 阻止默认提交行为
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // 提取所有产品的数据
+            const products = [];
+            const productsContainer = document.getElementById('products-container');
+            Array.from(productsContainer.children).forEach((productGroup, index) => {
+                const productId = productGroup.querySelector(`select[name="products[${index}][product_id]"]`)?.value;
+                const cost = productGroup.querySelector(`input[name="products[${index}][cost]"]`)?.value;
+                const quantity = productGroup.querySelector(`input[name="products[${index}][quantity]"]`)?.value;
+                const snCodes = Array.from(productGroup.querySelectorAll(`input[name="products[${index}][sn_codes][]"]`))
+                    .map(input => input.value);
+
+                const attributes = {};
+                const attributeInputs = productGroup.querySelectorAll(`[name^="products[${index}][attributes]"]`);
+                attributeInputs.forEach(attr => {
+                    const attrName = attr.getAttribute('name').match(/\[attributes\]\[([^\]]+)\]/)[1];
+                    attributes[attrName] = attr.value;
+                });
+
+                products.push({ product_id: productId, cost, quantity, sn_codes: snCodes, attributes });
+            });
+
+            // 创建请求数据
+            const payload = {
+                supplier_id: formData.get('supplier_id'),
+                products
+            };
+
+            // 发送 AJAX 请求
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('進貨單提交成功');
+                    location.reload();
+                } else {
+                    alert(`提交失敗: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('提交錯誤:', error);
+                alert('提交失敗，請稍後重試！');
+            });
+        });
     </script>
 </body>
 </html>
