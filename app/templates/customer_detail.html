@@ -19,7 +19,7 @@
         <!-- 客戶詳細資訊卡片 -->
         <div class="card mt-4">
             <div class="card-header">
-                <h2>{{ customer[1] }}</h2> <!-- 客戶名稱 -->
+                <h2>{{ customer[1] + '('+ customer['id'] | string +')' }}</h2> <!-- 客戶名稱 -->
             </div>
             <div class="card-body">
                 <form action="/update_customer/{{ customer[0] }}" method="post">
