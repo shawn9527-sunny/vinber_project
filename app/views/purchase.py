@@ -104,3 +104,32 @@ def generate_purchase_order_number(cursor):
     cursor.execute("SELECT COUNT(*) FROM purchases WHERE purchase_order_number LIKE ?", (f"PO-{date_str}-%",))
     count = cursor.fetchone()[0] + 1
     return f"PO-{date_str}-{count:04d}"
+
+# 批量删除進貨單
+@purchase_blueprint.route('/delete_purchases', methods=['POST'])
+def delete_purchases():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # 获取提交的进货单号列表
+        purchase_order_numbers = request.form.getlist('purchase_order_numbers')
+
+        if not purchase_order_numbers:
+            flash("未選擇進貨單進行刪除！", "danger")
+            return redirect(url_for('purchase.purchase'))
+
+        # 删除相关进货单及其属性记录
+        cursor.executemany("DELETE FROM purchases WHERE purchase_order_number = ?", [(number,) for number in purchase_order_numbers])
+        cursor.executemany("DELETE FROM purchase_attributes WHERE purchase_id IN (SELECT id FROM purchases WHERE purchase_order_number = ?)",
+                           [(number,) for number in purchase_order_numbers])
+
+        conn.commit()
+        flash(f"成功刪除 {len(purchase_order_numbers)} 筆進貨單！", "success")
+    except Exception as e:
+        conn.rollback()
+        flash(f"刪除失敗: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for('purchase.purchase'))

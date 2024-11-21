@@ -51,28 +51,37 @@
         </div>
 
         <!-- 進貨單列表 -->
-        <h2 class="text-center mt-5">進貨單列表</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>進貨單號</th>
-                        <th>供應商名稱</th>
-                        <th>進貨成本</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for purchase in purchases %}
-                    <tr>
-                        <td>{{ purchase['purchase_order_number'] }}</td>
-                        <td>{{ purchase['supplier_name'] }}</td>
-                        <td>{{ purchase['total_cost'] }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <h2 class="text-start mt-5">進貨單列表</h2>
+        <form id="deletePurchaseForm" action="{{ url_for('purchase.delete_purchases') }}" method="POST">
+            <div class="d-flex justify-content-end mb-3">
+                <button type="submit" class="btn btn-danger">刪除進貨單</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>進貨單號</th>
+                            <th>供應商名稱</th>
+                            <th>進貨成本</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for purchase in purchases %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="purchase_order_numbers" value="{{ purchase['purchase_order_number'] }}">
+                            </td>
+                            <td>{{ purchase['purchase_order_number'] }}</td>
+                            <td>{{ purchase['supplier_name'] }}</td>
+                            <td>{{ purchase['total_cost'] | round(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
 
     <script>
         function togglePurchaseForm() {
@@ -200,6 +209,22 @@
                 console.error('提交錯誤:', error);
                 alert('提交失敗，請稍後重試！');
             });
+        });
+        // 全选功能
+        document.getElementById('selectAll').addEventListener('click', function () {
+            const checkboxes = document.querySelectorAll('input[name="purchase_order_numbers"]');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+
+        // 删除确认提示
+        document.getElementById('deletePurchaseForm').addEventListener('submit', function (event) {
+            const selected = document.querySelectorAll('input[name="purchase_order_numbers"]:checked');
+            if (selected.length === 0) {
+                event.preventDefault();
+                alert("請選擇至少一個進貨單進行刪除！");
+            } else if (!confirm("確定要刪除選中的進貨單嗎？")) {
+                event.preventDefault();
+            }
         });
     </script>
 </body>
