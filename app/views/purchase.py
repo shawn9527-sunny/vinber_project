@@ -133,3 +133,92 @@ def delete_purchases():
         conn.close()
 
     return redirect(url_for('purchase.purchase'))
+
+# 進貨單詳細頁
+@purchase_blueprint.route('/purchase_detail/<string:purchase_order_number>', methods=['GET', 'POST'])
+def purchase_detail(purchase_order_number):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        try:
+            updates = request.get_json()
+            print(updates)
+            updated_products = updates.get('updated_products', [])
+
+            if not updated_products:
+                return jsonify(success=False, message="未收到更新的產品數據")
+
+            for product in updated_products:
+                sn_codes = product.get('sn_codes', [])
+                attributes = product.get('attributes', {})
+
+                for sn in sn_codes:
+                    sn_code = sn.get('sn_code')
+                    cost = sn.get('cost')
+
+                    if not sn_code or cost is None:
+                        continue  # 跳過無效的數據
+
+                    # 更新產品單價
+                    cursor.execute(
+                        "UPDATE purchases SET cost = ? WHERE id = ?",
+                        (cost, sn_code)
+                    )
+
+                    # 更新屬性
+                    if sn_code in attributes:
+                        for attr_name, attr_value in attributes[sn_code].items():
+                            cursor.execute('''
+                                INSERT INTO purchase_attributes (purchase_id, attribute_name, attribute_value)
+                                VALUES (?, ?, ?)
+                                ON CONFLICT(purchase_id, attribute_name) DO UPDATE SET attribute_value = excluded.attribute_value
+                            ''', (sn_code, attr_name, attr_value))
+
+            conn.commit()
+            return jsonify(success=True, message="進貨單更新成功！")
+
+        except Exception as e:
+            conn.rollback()
+            return jsonify(success=False, message=f"更新失敗: {str(e)}")
+
+
+
+    # 查詢進貨單的產品數據
+    cursor.execute('''
+        SELECT p.id AS sn_code, p.product_id, pr.name AS product_name, p.cost,
+               s.name AS supplier_name, p.purchase_order_number
+        FROM purchases p
+        JOIN products pr ON p.product_id = pr.id
+        JOIN suppliers s ON p.supplier_id = s.taxid
+        WHERE p.purchase_order_number = ?
+        ORDER BY p.product_id
+    ''', (purchase_order_number,))
+    purchases = cursor.fetchall()
+
+    # 分組產品數據
+    grouped_products = {}
+    for row in purchases:
+        product_id = row['product_id']
+        if product_id not in grouped_products:
+            grouped_products[product_id] = {
+                'product_name': row['product_name'],
+                'sn_codes': []
+            }
+        grouped_products[product_id]['sn_codes'].append({
+            'sn_code': row['sn_code'],
+            'cost': row['cost']
+        })
+
+    # 查詢屬性並添加到分組數據
+    for product_id, data in grouped_products.items():
+        for sn in data['sn_codes']:
+            cursor.execute('''
+                SELECT attribute_name, attribute_value
+                FROM purchase_attributes
+                WHERE purchase_id = ?
+            ''', (sn['sn_code'],))
+            sn['attributes'] = {row['attribute_name']: row['attribute_value'] for row in cursor.fetchall()}
+
+    conn.close()
+    return render_template('purchase_detail.html', grouped_products=grouped_products, purchase_order_number=purchase_order_number)

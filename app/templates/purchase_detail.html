@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>進貨單詳情</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between mb-4">
+            <a href="/" class="btn btn-secondary">回首頁</a>
+            <a href="{{ url_for('purchase.purchase') }}" class="btn btn-primary">回列表</a>
+        </div>
+        <h1 class="text-center">進貨單詳情</h1>
+
+        <!-- 顯示每組產品作為單獨表單 -->
+        {% for product_id, product_data in grouped_products.items() %}
+        <form class="mt-4 p-3 border rounded product-form">
+            <h3>{{ product_data.product_name }}</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>SN Code</th>
+                        {% for attribute_name in product_data.sn_codes[0].attributes.keys() %}
+                        <th>{{ attribute_name }}</th>
+                        {% endfor %}
+                        <th>產品單價</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sn_data in product_data.sn_codes %}
+                    <tr>
+                        <td>
+                            <input type="text" class="form-control" value="{{ sn_data.sn_code }}" disabled>
+                        </td>
+                        {% for attr_value in sn_data.attributes.values() %}
+                        <td>
+                            <input type="text" class="form-control attr-input" data-sn-code="{{ sn_data.sn_code }}" value="{{ attr_value }}" disabled>
+                        </td>
+                        {% endfor %}
+                        <td>
+                            <input type="number" class="form-control cost-input" data-sn-code="{{ sn_data.sn_code }}" value="{{ sn_data.cost }}" step="0.01" disabled>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-info edit-btn">編輯</button>
+        </form>
+        {% endfor %}
+
+        <!-- 儲存按鈕 -->
+        <div class="text-center mt-4">
+            <button type="button" class="btn btn-success" id="saveChangesBtn">儲存修改</button>
+        </div>
+    </div>
+
+    <script>
+        const modifiedProducts = {};
+
+        $(document).on('click', '.edit-btn', function () {
+            const form = $(this).closest('.product-form');
+            const inputs = form.find('.form-control');
+            
+            // 獲取按鈕當前狀態
+            const isCurrentlyEditing = $(this).text().trim() === '完成';
+
+            // 切換輸入框的禁用狀態
+            inputs.prop('disabled', isCurrentlyEditing);
+
+            // 切換按鈕文本
+            $(this).text(isCurrentlyEditing ? '編輯' : '完成');
+
+            // 如果狀態切換為完成，則記錄數據
+            if (isCurrentlyEditing) {
+                form.find('.form-control').each(function () {
+                    const snCode = $(this).data('sn-code');
+                    const value = $(this).val();
+                    const isCost = $(this).hasClass('cost-input');
+                    const attrName = $(this).closest('td').data('attribute') || null;
+
+                    if (!modifiedProducts[snCode]) {
+                        modifiedProducts[snCode] = { sn_code: snCode, attributes: {} };
+                    }
+                    if (isCost) {
+                        modifiedProducts[snCode].cost = value;
+                    } else {
+                        modifiedProducts[snCode].attributes[attrName] = value;
+                    }
+                });
+            }
+        });
+
+
+        $('#saveChangesBtn').click(function () {
+            const payload = {
+                updated_products: []
+            };
+
+            // 遍歷每個產品表單
+            $('.product-form').each(function () {
+                const productId = $(this).data('product-id'); // 每個產品的 ID
+                const productEntry = {
+                    product_id: productId,
+                    sn_codes: [],
+                    attributes: {}
+                };
+
+                // 遍歷每一行 SN Code 和屬性
+                $(this).find('tbody tr').each(function () {
+                    const snCode = $(this).find('.sn-code-input').val(); // 獲取 SN Code
+                    const cost = $(this).find('.cost-input').val(); // 獲取單價
+
+                    if (!snCode || !cost) {
+                        alert('所有 SN Code 和單價必須填寫！');
+                        return false; // 跳出當前循環
+                    }
+
+                    // 收集屬性
+                    const attributes = {};
+                    $(this).find('.attr-input').each(function () {
+                        const attrName = $(this).data('attribute-name');
+                        attributes[attrName] = $(this).val();
+                    });
+
+                    // 添加 SN Code 和屬性到產品數據
+                    productEntry.sn_codes.push({
+                        sn_code: snCode,
+                        cost: parseFloat(cost).toFixed(2)
+                    });
+                    productEntry.attributes[snCode] = attributes;
+                });
+
+                payload.updated_products.push(productEntry);
+            });
+
+            // 提交數據前確認
+            const confirmed = confirm('即將更新以下產品內容，是否確認？');
+            if (confirmed) {
+                console.log('提交的數據:', JSON.stringify(payload, null, 2));
+
+                // 發送 AJAX 請求
+                $.ajax({
+                    url: window.location.href,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (response) {
+                        if (response.success) {
+                            alert('修改成功！');
+                            location.reload();
+                        } else {
+                            alert('修改失敗: ' + response.message);
+                        }
+                    },
+                    error: function (error) {
+                        alert('提交失敗，請稍後重試！');
+                        console.error(error);
+                    }
+                });
+            }
+        });
+
+
+    </script>
+</body>
+</html>

@@ -45,34 +45,6 @@
             </div>
             
             <h3 class="mt-4">屬性列表</h3>
-            <!-- <table class="table">
-                <thead>
-                    <tr>
-                        <th>屬性名稱</th>
-                        <th>資料類型</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attribute in attributes %}
-                    <tr data-row-id="{{ attribute[0] }}">
-                        <td>
-                            <input type="text" name="attribute_names" class="form-control" value="{{ attribute[2] }}" disabled>
-                        </td>
-                        <td>
-                            <select name="attribute_types" class="form-control" disabled>
-                                <option value="TEXT" {% if attribute[3] == 'TEXT' %}selected{% endif %}>文字</option>
-                                <option value="INTEGER" {% if attribute[3] == 'INTEGER' %}selected{% endif %}>整數</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-warning btn-sm" onclick="toggleRowEdit(this, {{ attribute[0] }})">編輯</button>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="markAttributeForDeletion({{ attribute[0] }})">刪除</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table> -->
             <table class="table" id="attributesTable">
                 <thead>
                     <tr>
