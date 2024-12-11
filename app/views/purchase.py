@@ -47,13 +47,12 @@ def purchase():
                         VALUES (?, ?, ?, ?, ?)
                     ''', (sn_code, supplier_id, purchase_order_number, product_id, cost))
 
-                    # 插入属性
-                    for attr_name, attr_value in attributes.items():
+                    # 插入屬性
+                    for attr_id, attr_value in attributes.items():
                         cursor.execute('''
                             INSERT INTO purchase_attributes (purchase_id, attribute_name, attribute_value)
                             VALUES (?, ?, ?)
-                        ''', (sn_code, attr_name, attr_value))
-
+                        ''', (sn_code, attr_id, attr_value))
             conn.commit()
             return jsonify(success=True, message="進貨資料已成功添加")
 
@@ -83,19 +82,32 @@ def purchase():
     return render_template('purchase.html', products=products, suppliers=suppliers, purchases=purchases)
 
 
-# 取得產品屬性 API
+# # 取得產品屬性 API
+# @purchase_blueprint.route('/get_attributes/<int:product_id>', methods=['GET'])
+# def get_attributes(product_id):
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+
+#     # 查詢指定產品的屬性
+#     cursor.execute("SELECT name, data_type FROM attributes WHERE product_id = ?", (product_id,))
+#     attributes = cursor.fetchall()
+#     conn.close()
+
+#     # 返回 JSON 格式的屬性列表
+#     return jsonify([{"name": attr["name"], "data_type": attr["data_type"]} for attr in attributes])
 @purchase_blueprint.route('/get_attributes/<int:product_id>', methods=['GET'])
 def get_attributes(product_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 查詢指定產品的屬性
-    cursor.execute("SELECT name, data_type FROM attributes WHERE product_id = ?", (product_id,))
+    # 查詢指定產品的屬性，確保返回 ID 和名稱
+    cursor.execute("SELECT id, name, data_type FROM attributes WHERE product_id = ?", (product_id,))
     attributes = cursor.fetchall()
     conn.close()
 
     # 返回 JSON 格式的屬性列表
-    return jsonify([{"name": attr["name"], "data_type": attr["data_type"]} for attr in attributes])
+    return jsonify([{"id": attr["id"], "name": attr["name"], "data_type": attr["data_type"]} for attr in attributes])
+
 
 # 生成進貨單流水號
 def generate_purchase_order_number(cursor):
@@ -210,15 +222,26 @@ def purchase_detail(purchase_order_number):
             'cost': row['cost']
         })
 
+    # # 查詢屬性並添加到分組數據
+    # for product_id, data in grouped_products.items():
+    #     for sn in data['sn_codes']:
+    #         cursor.execute('''
+    #             SELECT attribute_name, attribute_value
+    #             FROM purchase_attributes
+    #             WHERE purchase_id = ?
+    #         ''', (sn['sn_code'],))
+    #         sn['attributes'] = {row['attribute_name']: row['attribute_value'] for row in cursor.fetchall()}
     # 查詢屬性並添加到分組數據
     for product_id, data in grouped_products.items():
         for sn in data['sn_codes']:
             cursor.execute('''
-                SELECT attribute_name, attribute_value
-                FROM purchase_attributes
-                WHERE purchase_id = ?
+                SELECT a.name AS attribute_name, pa.attribute_value
+                FROM purchase_attributes pa
+                JOIN attributes a ON pa.attribute_name = a.id
+                WHERE pa.purchase_id = ?
             ''', (sn['sn_code'],))
             sn['attributes'] = {row['attribute_name']: row['attribute_value'] for row in cursor.fetchall()}
-
     conn.close()
     return render_template('purchase_detail.html', grouped_products=grouped_products, purchase_order_number=purchase_order_number)
+
+

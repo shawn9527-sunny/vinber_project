@@ -67,13 +67,12 @@ def init_db():
         CREATE TABLE IF NOT EXISTS purchase_attributes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             purchase_id TEXT NOT NULL,  -- 對應 purchases 表的 SN Code
-            attribute_name TEXT NOT NULL,
+            attribute_name INTEGER NOT NULL,  -- 存儲 attributes 表中的 ID
             attribute_value TEXT NOT NULL,
-            FOREIGN KEY (purchase_id) REFERENCES purchases(id)
+            FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+            FOREIGN KEY (attribute_name) REFERENCES attributes(id)
         );
     ''')
-
-
 
     # 建立 users 表
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (

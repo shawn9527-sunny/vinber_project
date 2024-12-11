@@ -135,6 +135,25 @@
             container.appendChild(productGroup);
         }
 
+        // function fetchAttributes(productIndex) {
+        //     const productId = document.getElementById(`product_${productIndex}_id`).value;
+        //     const attributesContainer = document.getElementById(`attributes_${productIndex}`);
+        //     attributesContainer.innerHTML = "";
+
+        //     if (productId) {
+        //         $.getJSON(`/get_attributes/${productId}`, function(attributes) {
+        //             attributes.forEach(attribute => {
+        //                 const attributeInput = document.createElement("div");
+        //                 attributeInput.className = "form-group";
+        //                 attributeInput.innerHTML = `
+        //                     <label>${attribute.name}</label>
+        //                     <input type="text" class="form-control" name="products[${productIndex}][attributes][${attribute.name}]" placeholder="輸入 ${attribute.name}">
+        //                 `;
+        //                 attributesContainer.appendChild(attributeInput);
+        //             });
+        //         });
+        //     }
+        // }
         function fetchAttributes(productIndex) {
             const productId = document.getElementById(`product_${productIndex}_id`).value;
             const attributesContainer = document.getElementById(`attributes_${productIndex}`);
@@ -147,13 +166,17 @@
                         attributeInput.className = "form-group";
                         attributeInput.innerHTML = `
                             <label>${attribute.name}</label>
-                            <input type="text" class="form-control" name="products[${productIndex}][attributes][${attribute.name}]" placeholder="輸入 ${attribute.name}">
+                            <input type="text" class="form-control" 
+                                data-attribute-id="${attribute.id}" 
+                                name="products[${productIndex}][attributes][${attribute.id}]" 
+                                placeholder="輸入 ${attribute.name}">
                         `;
                         attributesContainer.appendChild(attributeInput);
                     });
                 });
             }
         }
+
 
         function generateSnCodeInputs(productIndex) {
             const quantity = document.getElementById(`quantity_${productIndex}`).value;
@@ -171,6 +194,60 @@
             }
         }
         
+        // document.getElementById('purchaseForm').addEventListener('submit', function (event) {
+        //     event.preventDefault(); // 阻止默认提交行为
+
+        //     const form = event.target;
+        //     const formData = new FormData(form);
+
+        //     // 提取所有产品的数据
+        //     const products = [];
+        //     const productsContainer = document.getElementById('products-container');
+        //     Array.from(productsContainer.children).forEach((productGroup, index) => {
+        //         const productId = productGroup.querySelector(`select[name="products[${index}][product_id]"]`)?.value;
+        //         const cost = productGroup.querySelector(`input[name="products[${index}][cost]"]`)?.value;
+        //         const quantity = productGroup.querySelector(`input[name="products[${index}][quantity]"]`)?.value;
+        //         const snCodes = Array.from(productGroup.querySelectorAll(`input[name="products[${index}][sn_codes][]"]`))
+        //             .map(input => input.value);
+
+        //         const attributes = {};
+        //         const attributeInputs = productGroup.querySelectorAll(`[name^="products[${index}][attributes]"]`);
+        //         attributeInputs.forEach(attr => {
+        //             const attrName = attr.getAttribute('name').match(/\[attributes\]\[([^\]]+)\]/)[1];
+        //             attributes[attrName] = attr.value;
+        //         });
+
+        //         products.push({ product_id: productId, cost, quantity, sn_codes: snCodes, attributes });
+        //     });
+
+        //     // 创建请求数据
+        //     const payload = {
+        //         supplier_id: formData.get('supplier_id'),
+        //         products
+        //     };
+
+        //     // 发送 AJAX 请求
+        //     fetch(form.action, {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify(payload)
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.success) {
+        //             alert('進貨單提交成功');
+        //             location.reload();
+        //         } else {
+        //             alert(`提交失敗: ${data.message}`);
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('提交錯誤:', error);
+        //         alert('提交失敗，請稍後重試！');
+        //     });
+        // });
         document.getElementById('purchaseForm').addEventListener('submit', function (event) {
             event.preventDefault(); // 阻止默认提交行为
 
@@ -190,9 +267,12 @@
                 const attributes = {};
                 const attributeInputs = productGroup.querySelectorAll(`[name^="products[${index}][attributes]"]`);
                 attributeInputs.forEach(attr => {
-                    const attrName = attr.getAttribute('name').match(/\[attributes\]\[([^\]]+)\]/)[1];
-                    attributes[attrName] = attr.value;
+                    const attrId = attr.getAttribute('data-attribute-id'); // 獲取屬性 ID
+                    attributes[attrId] = attr.value; // 使用屬性 ID 作為鍵
                 });
+
+                // 調試輸出查看數據
+                console.log(`Product ${index}:`, { productId, cost, quantity, snCodes, attributes });
 
                 products.push({ product_id: productId, cost, quantity, sn_codes: snCodes, attributes });
             });
@@ -202,6 +282,8 @@
                 supplier_id: formData.get('supplier_id'),
                 products
             };
+
+            console.log("Payload to be sent:", JSON.stringify(payload, null, 2)); // 調試輸出 payload
 
             // 发送 AJAX 请求
             fetch(form.action, {
@@ -225,6 +307,8 @@
                 alert('提交失敗，請稍後重試！');
             });
         });
+
+
         // 全选功能
         document.getElementById('selectAll').addEventListener('click', function () {
             const checkboxes = document.querySelectorAll('input[name="purchase_order_numbers"]');
