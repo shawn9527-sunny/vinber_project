@@ -5,6 +5,7 @@ from .views.customer import customer_blueprint
 from .views.product import product_blueprint
 from .views.purchase import purchase_blueprint
 from .views.index import index_blueprint
+from .views.inventory_check import inventory_check_blueprint
 
 
 def create_app():
@@ -20,6 +21,7 @@ def create_app():
     app.register_blueprint(index_blueprint)
     app.register_blueprint(product_blueprint)
     app.register_blueprint(purchase_blueprint)
+    app.register_blueprint(inventory_check_blueprint)
     with app.app_context():
         db.init_db()
     

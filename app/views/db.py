@@ -59,10 +59,26 @@ def init_db():
             purchase_order_number TEXT NOT NULL,
             product_id INTEGER NOT NULL,
             cost REAL NOT NULL,  -- 單價
+            purchase_date TEXT,  -- 使用 TEXT 類型存儲日期時間
             FOREIGN KEY (supplier_id) REFERENCES suppliers(taxid),
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
     ''')
+
+    # 檢查是否已存在 purchase_date 欄位
+    cursor.execute("PRAGMA table_info(purchases)")
+    columns = cursor.fetchall()
+    if not any(column[1] == 'purchase_date' for column in columns):
+        # 如果不存在，則添加欄位
+        cursor.execute('''
+            ALTER TABLE purchases ADD COLUMN purchase_date TEXT;
+        ''')
+        # 更新現有記錄的 purchase_date
+        cursor.execute('''
+            UPDATE purchases SET purchase_date = CURRENT_TIMESTAMP
+            WHERE purchase_date IS NULL;
+        ''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS purchase_attributes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +89,7 @@ def init_db():
             FOREIGN KEY (attribute_name) REFERENCES attributes(id)
         );
     ''')
+
 
     # 建立 users 表
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
