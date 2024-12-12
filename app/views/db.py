@@ -5,34 +5,15 @@ def init_db():
     conn = sqlite3.connect('management_system.db')
     cursor = conn.cursor()
 
-    # 建立 suppliers 表
-    cursor.execute('''CREATE TABLE IF NOT EXISTS suppliers (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
-                        phone TEXT,
-                        address TEXT,
-                        email TEXT,
-                        notes TEXT
-                        )''')
-    # cursor.execute('''
-    #     ALTER TABLE suppliers ADD COLUMN taxID TEXT UNIQUE NOT NULL;
-    # ''')
-    # 建立 customers 表
-    cursor.execute('''CREATE TABLE IF NOT EXISTS customers (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
-                        phone TEXT,
-                        address TEXT,
-                        email TEXT,
-                        notes TEXT
-                        )''')
-
-    # 產品類別表
+    # 用戶表
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS products (
+        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            code_prefix TEXT NOT NULL  -- 自定義編號前綴，例如 "01" 代表蘋果
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,  -- 'admin' 或 'user'
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            last_login TEXT
         )
     ''')
 
@@ -91,26 +72,26 @@ def init_db():
     ''')
 
 
-    # 建立 users 表
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        username TEXT NOT NULL UNIQUE,
-                        password TEXT NOT NULL,
-                        role TEXT NOT NULL,  -- 'admin' 或 'user'
-                        permissions TEXT
-                        )''')
+    # 用戶表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,  -- 'admin' 或 'user'
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            last_login TEXT
+        )
+    ''')
 
-    # 建立 features 表
-    cursor.execute('''CREATE TABLE IF NOT EXISTS features (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL UNIQUE
-                        )''')
-
-    # 插入預設管理員賬戶
-    cursor.execute('SELECT * FROM users WHERE username = "admin"')
-    if cursor.fetchone() is None:
-        cursor.execute('INSERT INTO users (username, password, role, permissions) VALUES (?, ?, ?, ?)',
-                        ('admin', 'password', 'admin', 'all'))
+    # 檢查是否已存在管理員帳戶
+    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+    if not cursor.fetchone():
+        # 創建默認管理員帳戶 (密碼需要在首次登入時修改)
+        cursor.execute('''
+            INSERT INTO users (username, password, role)
+            VALUES ('admin', 'admin', 'admin')
+        ''')
 
     # 提交並關閉連接
     conn.commit()
