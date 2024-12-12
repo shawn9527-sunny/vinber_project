@@ -94,7 +94,7 @@ def change_password():
             ''', (new_password, session['user_id']))
             conn.commit()
             flash('密碼已更新', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('index.index'))
         else:
             flash('原密碼錯誤', 'danger')
         
