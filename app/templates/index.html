@@ -3,35 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進銷存管理系統</title>
+    <title>主選單</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <style>
-        .menu-button {
-            transition: transform 0.2s;
-        }
-        .menu-button:hover {
-            transform: scale(1.05);
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-    <!-- 添加頂部導航欄 -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">進銷存管理系統</a>
-            <div class="ml-auto">
-                <span class="mr-3">歡迎, {{ session['username'] }}</span>
-                <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-secondary mr-2">
-                    <i class="fas fa-key"></i> 修改密碼
-                </a>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
-                    <i class="fas fa-sign-out-alt"></i> 登出
-                </a>
-            </div>
-        </div>
-    </nav>
-
     <div class="container mt-5">
         <h1 class="text-center mb-4">主選單</h1>
         <div class="d-flex justify-content-around flex-wrap">
@@ -58,6 +34,10 @@
             <a href="/products" class="btn btn-warning btn-lg m-3 d-flex flex-column align-items-center" style="width:150px; height:150px;">
                 <i class="fas fa-barcode fa-3x mb-2"></i>
                 商品管理
+            </a>
+            <a href="{{ url_for('logger.view_logs') }}" class="btn btn-info btn-lg m-3 d-flex flex-column align-items-center menu-button" style="width:150px; height:150px;">
+                <i class="fas fa-history fa-3x mb-2"></i>
+                操作日誌
             </a>
         </div>
     </div>

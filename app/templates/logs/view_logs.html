@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作日誌</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>操作日誌</h2>
+            <a href="/" class="btn btn-secondary">返回首頁</a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table id="logsTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>時間</th>
+                            <th>用戶</th>
+                            <th>操作</th>
+                            <th>表格</th>
+                            <th>記錄ID</th>
+                            <th>詳細資訊</th>
+                            <th>IP位址</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.created_at }}</td>
+                            <td>{{ log.username }}</td>
+                            <td>{{ log.action }}</td>
+                            <td>{{ log.table_name }}</td>
+                            <td>{{ log.record_id }}</td>
+                            <td>
+                                {% if log.details %}
+                                <button class="btn btn-sm btn-info" onclick="showDetails('{{ log.details|tojson|safe }}')">
+                                    查看
+                                </button>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.ip_address }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 詳細資訊模態框 -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">詳��資訊</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <pre id="detailsContent"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#logsTable').DataTable({
+                "order": [[0, "desc"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese-traditional.json"
+                },
+                "pageLength": 25
+            });
+        });
+
+        function showDetails(details) {
+            const detailsObj = JSON.parse(details);
+            $('#detailsContent').text(JSON.stringify(detailsObj, null, 2));
+            $('#detailsModal').modal('show');
+        }
+    </script>
+</body>
+</html> 

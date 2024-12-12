@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 import sqlite3
+from .logger import log_operation
 
 purchase_blueprint = Blueprint('purchase', __name__)
 
@@ -43,8 +44,8 @@ def purchase():
                 # 插入每个 SN Code
                 for sn_code in sn_codes:
                     cursor.execute('''
-                        INSERT INTO purchases (id, supplier_id, purchase_order_number, product_id, cost)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO purchases (id, supplier_id, purchase_order_number, product_id, cost, purchase_date)
+                        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                     ''', (sn_code, supplier_id, purchase_order_number, product_id, cost))
 
                     # 插入屬性
@@ -54,6 +55,18 @@ def purchase():
                             VALUES (?, ?, ?)
                         ''', (sn_code, attr_id, attr_value))
             conn.commit()
+            # 記錄操作日誌
+            log_operation(
+                action='新增進貨',
+                table_name='purchases',
+                record_id=sn_code,
+                details={
+                    'product_id': product_id,
+                    'supplier_id': supplier_id,
+                    'cost': cost,
+                    'purchase_order_number': purchase_order_number
+                }
+            )
             return jsonify(success=True, message="進貨資料已成功添加")
 
         except Exception as e:
